@@ -1,0 +1,5 @@
+{
+  "name": "@shared/lib",
+  "private": true,
+  "type": "module"
+}

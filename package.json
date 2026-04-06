@@ -1,0 +1,15 @@
+{
+  "name": "playground.sh",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dashboard": "pnpm --filter dashboard dev",
+    "build:all": "pnpm --filter './rooms/*' --parallel build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.2"
+  }
+}

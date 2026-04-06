@@ -1,0 +1,6 @@
+packages:
+  - rooms/*
+  - shared
+  - dashboard
+ignoredBuiltDependencies:
+  - esbuild
