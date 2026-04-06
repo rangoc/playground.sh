@@ -158,6 +158,16 @@ main#grid {
   background: #2a2a4e;
 }
 
+.room-card__actions .stop-btn {
+  background: #2a1a1a;
+  color: #ff7c7c;
+  border-color: #4e2a2a;
+}
+
+.room-card__actions .stop-btn:hover {
+  background: #3a2020;
+}
+
 .spinner {
   width: 16px;
   height: 16px;

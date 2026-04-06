@@ -23,6 +23,10 @@ async function startRoom(name: string): Promise<{ name: string; port: number }> 
   return res.json()
 }
 
+async function stopRoom(name: string): Promise<void> {
+  await fetch(`/api/rooms/${name}/stop`, { method: 'POST' })
+}
+
 function getAllTags(rooms: Room[]): string[] {
   const tags = new Set<string>()
   for (const room of rooms) {
@@ -98,6 +102,19 @@ function renderCard(room: Room): HTMLElement {
       e.stopPropagation()
       window.open(`http://localhost:${room.port}`, '_blank')
     })
+
+    const stopBtn = document.createElement('button')
+    stopBtn.className = 'stop-btn'
+    stopBtn.textContent = 'Stop'
+    stopBtn.addEventListener('click', async (e) => {
+      e.stopPropagation()
+      await stopRoom(room.name)
+      room.running = false
+      room.port = null
+      const newCard = renderCard(room)
+      card.replaceWith(newCard)
+    })
+    actions.appendChild(stopBtn)
   } else {
     btn.textContent = 'Start'
     btn.addEventListener('click', async (e) => {
