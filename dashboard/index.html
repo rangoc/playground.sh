@@ -4,17 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>playground.sh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <header>
-      <h1>playground.sh</h1>
+      <div class="header-left">
+        <h1>playground.sh</h1>
+        <span class="room-count" id="room-count"></span>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
     </header>
     <nav id="filter-bar"></nav>
     <main id="grid"></main>
     <div id="empty-state" hidden>
-      <p>No rooms yet.</p>
-      <p>Create one with Claude: <code>"create a room for Three.js shaders"</code></p>
+      <p class="empty-title">No rooms yet.</p>
+      <p class="empty-hint">Create one with Claude: <code>"create a room for Three.js shaders"</code></p>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
