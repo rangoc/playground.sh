@@ -31,6 +31,12 @@ importers:
         specifier: ^4.19.0
         version: 4.21.0
 
+  rooms/funky-shadow:
+    dependencies:
+      funky-shadow:
+        specifier: latest
+        version: 0.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+
   rooms/hello-world: {}
 
   rooms/react-counter:
@@ -857,6 +863,17 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
+
+  funky-shadow@0.1.0:
+    resolution: {integrity: sha512-6NEM3J/GkCi5kQFp+N2R+SoskAJY7whO1HA6aLGwYJ8vkHy3vcEXTvMJa/40TTnNbxMUaiQgE15HhGWH6h+06A==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -1936,6 +1953,11 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
+
+  funky-shadow@0.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    optionalDependencies:
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
 
   gensync@1.0.0-beta.2: {}
 

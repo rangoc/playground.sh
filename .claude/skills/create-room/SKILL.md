@@ -102,6 +102,13 @@ Standard HTML5 boilerplate with a `<script type="module">` pointing to the entry
 
 A starter file (`main.ts`, `main.tsx`, `App.svelte`, etc.) with a minimal working example that renders something visible. The starter should demonstrate the tech stack — not just "hello world" but something that shows the framework/library is wired correctly (e.g. a reactive counter for React, a rotating cube for Three.js).
 
+**Always include theme support.** Import and call `initTheme()` from `@shared/theme`:
+
+- Vanilla: `import { initTheme } from '@shared/theme'; initTheme()` at the top of the entry file
+- React: call `initTheme()` inside a `useEffect` in the root component
+
+This adds a light/dark toggle button. Use `[data-theme="light"]` and `[data-theme="dark"]` selectors in CSS to style both modes. The theme persists across sessions via localStorage.
+
 ### 4. Install dependencies
 
 Run `pnpm install` from the workspace root.

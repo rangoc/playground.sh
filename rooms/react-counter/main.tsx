@@ -1,8 +1,11 @@
 import { createRoot } from 'react-dom/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { initTheme } from '@shared/theme'
 
 function Counter() {
   const [count, setCount] = useState(0)
+
+  useEffect(() => { initTheme() }, [])
 
   return (
     <div>

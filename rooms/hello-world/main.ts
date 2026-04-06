@@ -1,4 +1,7 @@
 import { clamp, lerp } from '@shared/math'
+import { initTheme } from '@shared/theme'
+
+initTheme()
 
 const app = document.getElementById('app')!
 
