@@ -105,6 +105,7 @@ main#grid {
   color: #333;
   font-size: 0.875rem;
   position: relative;
+  overflow: hidden;
 }
 
 .room-card__preview iframe {

@@ -67,7 +67,7 @@ function renderCard(room: Room): HTMLElement {
 
   if (room.running && room.port) {
     const iframe = document.createElement('iframe')
-    iframe.src = `http://localhost:${room.port}`
+    iframe.src = `http://localhost:${room.port}?preview=true`
     preview.appendChild(iframe)
   } else {
     preview.textContent = room.name
