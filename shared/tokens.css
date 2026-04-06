@@ -1,0 +1,129 @@
+/* ---- playground.sh Design Tokens ---- */
+/* Single source of truth for the Apple-inspired design system. */
+/* Import this in every entry point: dashboard, rooms, shared components. */
+
+:root {
+  /* Font */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
+
+  /* Page */
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-alt: #e8e8ed;
+  --surface-running: #e3f0ff;
+
+  /* Text */
+  --text-primary: #1d1d1f;
+  --text-secondary: rgba(0, 0, 0, 0.48);
+  --text-tertiary: rgba(0, 0, 0, 0.3);
+
+  /* Accent */
+  --blue: #0071e3;
+  --blue-link: #0066cc;
+  --green: #34c759;
+  --red: #ff3b30;
+  --red-border: rgba(255, 59, 48, 0.3);
+
+  /* Borders & Shadows */
+  --border: rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lg: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+
+  /* Controls */
+  --control-bg: #f0f0f0;
+  --control-radius: 20px;
+  --control-height: 36px;
+
+  /* Pills / Filter Tags */
+  --pill-bg: transparent;
+  --pill-border: rgba(0, 0, 0, 0.15);
+  --pill-text: rgba(0, 0, 0, 0.6);
+  --pill-active-bg: #1d1d1f;
+  --pill-active-text: #ffffff;
+  --pill-active-border: #1d1d1f;
+
+  /* Tags */
+  --tag-bg: #f5f5f7;
+  --tag-text: rgba(0, 0, 0, 0.48);
+
+  /* Segmented Controls */
+  --seg-bg: #e8e8ed;
+  --seg-active-bg: #ffffff;
+  --seg-active-text: #1d1d1f;
+  --seg-inactive-text: rgba(0, 0, 0, 0.48);
+  --seg-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  /* Toggle */
+  --toggle-bg: #d1d1d6;
+  --toggle-active: #34c759;
+  --toggle-thumb: #ffffff;
+
+  /* Track (sliders) */
+  --track-bg: #d1d1d6;
+  --track-fill: #1d1d1f;
+
+  /* Swatch */
+  --swatch-border: rgba(0, 0, 0, 0.08);
+  --swatch-active-border: #1d1d1f;
+
+  /* Code */
+  --code-bg: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  /* Page */
+  --bg: #000000;
+  --surface: #161617;
+  --surface-alt: #1c1c1e;
+  --surface-running: #0a1a2e;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.48);
+  --text-tertiary: rgba(255, 255, 255, 0.24);
+
+  /* Accent */
+  --blue-link: #2997ff;
+  --red-border: rgba(255, 69, 58, 0.3);
+
+  /* Borders & Shadows */
+  --border: rgba(255, 255, 255, 0.06);
+  --shadow-sm: none;
+  --shadow-lg: rgba(0, 0, 0, 0.5) 3px 5px 30px 0px;
+
+  /* Controls */
+  --control-bg: #2c2c2e;
+
+  /* Pills */
+  --pill-border: rgba(255, 255, 255, 0.15);
+  --pill-text: rgba(255, 255, 255, 0.6);
+  --pill-active-bg: #ffffff;
+  --pill-active-text: #000000;
+  --pill-active-border: #ffffff;
+
+  /* Tags */
+  --tag-bg: rgba(255, 255, 255, 0.06);
+  --tag-text: rgba(255, 255, 255, 0.48);
+
+  /* Segmented */
+  --seg-bg: #2c2c2e;
+  --seg-active-bg: #48484a;
+  --seg-active-text: #ffffff;
+  --seg-inactive-text: rgba(255, 255, 255, 0.48);
+  --seg-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+
+  /* Toggle */
+  --toggle-bg: #48484a;
+  --toggle-active: #30d158;
+
+  /* Track */
+  --track-bg: #48484a;
+  --track-fill: #ffffff;
+
+  /* Swatch */
+  --swatch-border: rgba(255, 255, 255, 0.1);
+  --swatch-active-border: #ffffff;
+
+  /* Code */
+  --code-bg: rgba(255, 255, 255, 0.06);
+}

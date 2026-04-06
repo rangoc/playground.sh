@@ -1,0 +1,312 @@
+/* ---- Shared Sidebar Controls ---- */
+/* Imports design tokens from tokens.css. */
+/* Apple-inspired controls: pill sliders, iOS segmented, toggles, palette grid. */
+
+@import './tokens.css';
+
+/* ---- Sidebar Container ---- */
+.sb {
+  width: 300px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  font-family: var(--font);
+  background: var(--surface);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Section ---- */
+.sb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sb-label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+  padding-left: 2px;
+}
+
+/* ---- Slider (pill-shaped row) ---- */
+.sb-slider {
+  display: flex;
+  align-items: center;
+  height: var(--control-height);
+  background: var(--control-bg);
+  border-radius: var(--control-radius);
+  padding: 0 14px;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sb-slider__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  z-index: 1;
+  letter-spacing: -0.2px;
+}
+
+.sb-slider__input {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.sb-slider__input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track-bg);
+}
+
+.sb-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--track-fill);
+  margin-top: -6px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sb-slider__input::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track-bg);
+  border: none;
+}
+
+.sb-slider__input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--track-fill);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sb-slider__value {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 3.5ch;
+  text-align: right;
+  white-space: nowrap;
+  z-index: 1;
+  letter-spacing: -0.2px;
+}
+
+/* ---- Segmented Control (iOS-style) ---- */
+.sb-segmented {
+  display: flex;
+  background: var(--seg-bg);
+  border-radius: var(--control-radius);
+  padding: 3px;
+  gap: 2px;
+  position: relative;
+}
+
+.sb-segmented__btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: calc(var(--control-radius) - 3px);
+  background: transparent;
+  color: var(--seg-inactive-text);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  transition: all 0.2s ease;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.sb-segmented__btn.active {
+  background: var(--seg-active-bg);
+  color: var(--seg-active-text);
+  box-shadow: var(--seg-shadow);
+}
+
+/* ---- Toggle (iOS-style) ---- */
+.sb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+}
+
+.sb-toggle-row__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.sb-toggle {
+  width: 42px;
+  height: 26px;
+  background: var(--toggle-bg);
+  border-radius: 13px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sb-toggle.on {
+  background: var(--toggle-active);
+}
+
+.sb-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--toggle-thumb);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.sb-toggle.on::after {
+  transform: translateX(16px);
+}
+
+/* ---- Palette Grid ---- */
+.sb-palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sb-palette-header__action {
+  font-size: 13px;
+  font-weight: 400;
+  background: none;
+  border: none;
+  color: var(--blue-link);
+  cursor: pointer;
+  font-family: var(--font);
+  letter-spacing: -0.2px;
+}
+
+.sb-palette-header__action:hover {
+  text-decoration: underline;
+}
+
+.sb-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.sb-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+  padding: 0;
+}
+
+.sb-swatch.active {
+  border-color: var(--swatch-active-border);
+}
+
+/* ---- Color Stops (inline circles) ---- */
+.sb-colors-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sb-colors-row__label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-right: 8px;
+  letter-spacing: -0.1px;
+}
+
+.sb-color-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--swatch-border);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.sb-color-circle:hover {
+  border-color: var(--swatch-active-border);
+}
+
+.sb-color-add {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px dashed var(--text-tertiary);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.sb-color-add:hover {
+  border-color: var(--blue-link);
+  color: var(--blue-link);
+}
+
+/* ---- Back to Preset Link ---- */
+.sb-back-link {
+  font-size: 12px;
+  font-weight: 400;
+  background: none;
+  border: none;
+  color: var(--blue-link);
+  cursor: pointer;
+  font-family: var(--font);
+  padding: 0;
+  letter-spacing: -0.1px;
+}
+
+.sb-back-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Active Indicator ---- */
+.sb-active-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--blue-link);
+  letter-spacing: -0.1px;
+}

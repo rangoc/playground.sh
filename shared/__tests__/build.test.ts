@@ -29,35 +29,25 @@ function readAllFiles(dir: string): string[] {
 
 describe('room builds', () => {
   beforeAll(() => {
-    buildRoom('hello-world')
-    buildRoom('react-counter')
+    buildRoom('funky-shadow')
   }, 30000)
 
-  it('hello-world build produces index.html', () => {
-    expect(existsSync(join(distDir('hello-world'), 'index.html'))).toBe(true)
-  })
-
-  it('react-counter build produces index.html', () => {
-    expect(existsSync(join(distDir('react-counter'), 'index.html'))).toBe(true)
+  it('funky-shadow build produces index.html', () => {
+    expect(existsSync(join(distDir('funky-shadow'), 'index.html'))).toBe(true)
   })
 
   it('built output has no unresolved @shared references', () => {
-    for (const room of ['hello-world', 'react-counter']) {
-      const files = readAllFiles(distDir(room))
-      for (const file of files) {
-        if (!file.endsWith('.js') && !file.endsWith('.html')) continue
-        const content = readFileSync(file, 'utf-8')
-        expect(content).not.toContain('@shared')
-      }
+    const files = readAllFiles(distDir('funky-shadow'))
+    for (const file of files) {
+      if (!file.endsWith('.js') && !file.endsWith('.html')) continue
+      const content = readFileSync(file, 'utf-8')
+      expect(content).not.toContain('@shared')
     }
   })
 
   it('built HTML references only local assets', () => {
-    for (const room of ['hello-world', 'react-counter']) {
-      const html = readFileSync(join(distDir(room), 'index.html'), 'utf-8')
-      // Should not reference parent directories or absolute system paths
-      expect(html).not.toContain('../')
-      expect(html).not.toMatch(/src="\/Users\//)
-    }
+    const html = readFileSync(join(distDir('funky-shadow'), 'index.html'), 'utf-8')
+    expect(html).not.toContain('../')
+    expect(html).not.toMatch(/src="\/Users\//)
   })
 })

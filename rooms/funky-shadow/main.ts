@@ -1,10 +1,11 @@
 import { renderShadow, PRESETS, DEFAULT_CONFIG, type ShadowConfig } from 'funky-shadow'
 import { initTheme } from '@shared/theme'
 import { applyPreviewClass } from '@shared/preview'
+import { createSlider, createSegmented, createToggle, createSection, createSidebar } from '@shared/sidebar'
+import '@shared/sidebar.css'
 
-const preview = applyPreviewClass()
-
-if (!preview) initTheme()
+const isPreview = applyPreviewClass()
+if (!isPreview) initTheme()
 
 const state: ShadowConfig & { width: number; height: number; radius: number } = {
   ...DEFAULT_CONFIG,
@@ -13,20 +14,22 @@ const state: ShadowConfig & { width: number; height: number; radius: number } = 
   radius: 16,
 }
 
+let customStops: [number, number, number][] = []
+
+// ---- Scaffold page ----
 const app = document.getElementById('app')!
 app.innerHTML = `
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0a0a0a; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f5f5f7; color: #1d1d1f;
       min-height: 100vh; transition: background 0.2s, color 0.2s;
     }
-    [data-theme="light"] body { background: #f5f5f5; color: #222; }
+    [data-theme="dark"] body { background: #000; color: #fff; }
 
     .layout { display: flex; min-height: 100vh; }
-
-    /* Preview area */
-    .preview {
+    .preview-area {
       flex: 1; display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
     }
@@ -37,282 +40,53 @@ app.innerHTML = `
     }
     .card {
       position: relative; z-index: 1;
-      background: #1a1a1a; border-radius: 16px;
+      background: #fff; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.125rem; font-weight: 500; color: #fff; border: 1px solid #333;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      font-size: 17px; font-weight: 500; color: #1d1d1f;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: background 0.2s, color 0.2s;
     }
-    [data-theme="light"] .card { background: #fff; color: #111; border-color: #ddd; }
+    [data-theme="dark"] .card { background: #1c1c1e; color: #fff; box-shadow: none; }
 
-    /* XY Pad */
-    .xy-pad-container { position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 10; }
-    .xy-labels { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.75rem; color: #888; }
-    .xy-labels span { display: flex; align-items: center; gap: 0.25rem; }
-    .xy-labels strong { color: #fff; font-variant-numeric: tabular-nums; }
-    [data-theme="light"] .xy-labels strong { color: #111; }
+    /* XY Pad (inline in sidebar) */
+    .xy-labels { display: flex; gap: 10px; font-size: 12px; color: var(--sb-label, rgba(0,0,0,0.48)); }
+    .xy-labels strong { color: var(--sb-text, #1d1d1f); font-variant-numeric: tabular-nums; }
     .xy-pad {
-      width: 100px; height: 100px; background: #1a1a1a; border: 1px solid #333;
-      border-radius: 8px; position: relative; cursor: crosshair; touch-action: none;
+      width: 100%; max-width: 120px; aspect-ratio: 1;
+      background: var(--sb-control-bg, #e8e8ed); border-radius: 12px;
+      position: relative; cursor: crosshair; touch-action: none;
     }
-    [data-theme="light"] .xy-pad { background: #eee; border-color: #ccc; }
     .xy-dot {
-      width: 12px; height: 12px; background: #7c8aff; border-radius: 50%;
+      width: 10px; height: 10px; background: var(--sb-track-fill, #1d1d1f); border-radius: 50%;
       position: absolute; transform: translate(-50%, -50%); pointer-events: none;
-      border: 2px solid #fff;
+      border: 2px solid var(--sb-toggle-thumb, #fff); box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    .xy-extra { display: flex; flex-direction: column; gap: 0.375rem; margin-top: 0.75rem; }
-    .xy-extra label { font-size: 0.75rem; color: #888; display: flex; flex-direction: column; gap: 0.125rem; }
-    .xy-extra input[type="range"] { width: 100px; }
-
-    /* Sidebar */
-    .sidebar {
-      width: 300px; border-left: 1px solid #222; overflow-y: auto; padding: 1rem;
-      display: flex; flex-direction: column; gap: 1rem; flex-shrink: 0;
-      background: #0f0f0f;
-    }
-    [data-theme="light"] .sidebar { background: #fafafa; border-color: #ddd; }
-
-    .section-label {
-      font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.05em; color: #666; margin-bottom: 0.25rem;
-    }
-
-    /* Slider row */
-    .slider-row {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
-      padding: 0.5rem 0.75rem; gap: 0.5rem;
-    }
-    [data-theme="light"] .slider-row { background: #fff; border-color: #ddd; }
-    .slider-row span { font-size: 0.8125rem; white-space: nowrap; }
-    .slider-row input[type="range"] { flex: 1; min-width: 0; }
-    .slider-row .value {
-      font-size: 0.8125rem; font-variant-numeric: tabular-nums;
-      color: #aaa; min-width: 3ch; text-align: right;
-    }
-    [data-theme="light"] .slider-row .value { color: #666; }
-
-    /* Segmented control */
-    .segmented {
-      display: flex; border: 1px solid #222; border-radius: 6px; overflow: hidden;
-    }
-    [data-theme="light"] .segmented { border-color: #ddd; }
-    .segmented button {
-      flex: 1; padding: 0.375rem 0.5rem; background: #1a1a1a; color: #888;
-      border: none; cursor: pointer; font-size: 0.8125rem; transition: all 0.15s;
-    }
-    [data-theme="light"] .segmented button { background: #fff; color: #888; }
-    .segmented button + button { border-left: 1px solid #222; }
-    [data-theme="light"] .segmented button + button { border-color: #ddd; }
-    .segmented button.active { background: #2a2a4e; color: #7c8aff; }
-    [data-theme="light"] .segmented button.active { background: #e8e8ff; color: #4a5aff; }
-
-    /* Toggle */
-    .toggle-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.375rem 0;
-    }
-    .toggle-row span { font-size: 0.8125rem; }
-    .toggle {
-      width: 36px; height: 20px; background: #333; border-radius: 10px;
-      position: relative; cursor: pointer; transition: background 0.2s; border: none;
-    }
-    .toggle.on { background: #4a5aff; }
-    .toggle::after {
-      content: ''; position: absolute; top: 2px; left: 2px;
-      width: 16px; height: 16px; background: #fff; border-radius: 50%;
-      transition: transform 0.2s;
-    }
-    .toggle.on::after { transform: translateX(16px); }
-
-    /* Palette grid */
-    .palette-header { display: flex; justify-content: space-between; align-items: center; }
-    .palette-header button {
-      font-size: 0.75rem; background: none; border: none; color: #7c8aff;
-      cursor: pointer; padding: 0.125rem 0;
-    }
-    .palette-header button:hover { text-decoration: underline; }
-    .palette-grid {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
-    }
-    .palette-swatch {
-      width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: border-color 0.15s;
-    }
-    .palette-swatch.active { border-color: #fff; }
-    [data-theme="light"] .palette-swatch.active { border-color: #333; }
-
-    /* Custom colors */
-    .custom-colors-header { display: flex; justify-content: space-between; align-items: center; }
-    .custom-colors-header button {
-      font-size: 0.75rem; background: none; border: none; color: #7c8aff;
-      cursor: pointer; padding: 0.125rem 0;
-    }
-    .custom-colors-header button:hover { text-decoration: underline; }
-    .color-stops { display: flex; flex-direction: column; gap: 6px; }
-    .color-stop {
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .color-stop input[type="color"] {
-      width: 32px; height: 32px; border: 1px solid #333; border-radius: 6px;
-      background: none; cursor: pointer; padding: 0;
-    }
-    [data-theme="light"] .color-stop input[type="color"] { border-color: #ccc; }
-    .color-stop .hex {
-      font-size: 0.75rem; color: #888; font-family: monospace; flex: 1;
-    }
-    .color-stop .remove-stop {
-      background: none; border: none; color: #666; cursor: pointer;
-      font-size: 1rem; padding: 0 0.25rem; line-height: 1;
-    }
-    .color-stop .remove-stop:hover { color: #ff7c7c; }
-    .add-stop-btn {
-      background: #1a1a1a; border: 1px dashed #444; color: #888;
-      padding: 0.375rem; border-radius: 6px; cursor: pointer;
-      font-size: 0.75rem; text-align: center; transition: border-color 0.15s;
-    }
-    [data-theme="light"] .add-stop-btn { background: #fff; border-color: #ccc; }
-    .add-stop-btn:hover { border-color: #7c8aff; color: #7c8aff; }
-    .custom-active-indicator {
-      font-size: 0.6875rem; color: #7c8aff; font-weight: 500;
-    }
-
-    /* Shuffle button */
+    /* Shuffle */
     .shuffle-btn {
-      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-      background: #1a1a1a; border: 1px solid #333; color: #e0e0e0;
-      padding: 0.5rem 1.25rem; border-radius: 8px; cursor: pointer;
-      font-size: 0.875rem; z-index: 10; transition: background 0.15s;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #fff; border: 1px solid rgba(0,0,0,0.1); color: #1d1d1f;
+      padding: 8px 20px; border-radius: 980px; cursor: pointer;
+      font-size: 14px; font-weight: 400; font-family: 'Inter', sans-serif;
+      z-index: 10; transition: all 0.15s; letter-spacing: -0.2px;
     }
-    [data-theme="light"] .shuffle-btn { background: #fff; border-color: #ccc; color: #222; }
-    .shuffle-btn:hover { background: #252525; }
-    [data-theme="light"] .shuffle-btn:hover { background: #f0f0f0; }
+    [data-theme="dark"] .shuffle-btn { background: #2c2c2e; border-color: rgba(255,255,255,0.1); color: #fff; }
+    .shuffle-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-    /* Preview mode — hide all chrome, show only the shadow card */
-    [data-preview] .sidebar,
-    [data-preview] .xy-pad-container,
+    /* Preview mode */
+    [data-preview] .sb,
     [data-preview] .shuffle-btn,
     [data-preview] #theme-toggle { display: none !important; }
-    [data-preview] .preview {
-      width: 100vw; height: 100vh;
-      overflow: hidden;
-    }
-    [data-preview] .card-container {
-      transform: scale(0.65);
-      transform-origin: center center;
-    }
+    [data-preview] .preview-area { width: 100vw; height: 100vh; overflow: hidden; }
+    [data-preview] .card-container { transform: scale(0.65); transform-origin: center center; }
   </style>
 
   <div class="layout">
-    <div class="preview">
+    <div id="sidebar-mount"></div>
+    <div class="preview-area">
       <div class="card-container">
         <canvas id="shadow"></canvas>
         <div class="card" id="card">funky shadow</div>
       </div>
-    </div>
-
-    <div class="sidebar">
-      <div>
-        <div class="section-label">Dimensions</div>
-        <div class="slider-row"><span>Width</span><input type="range" min="100" max="600" data-prop="width" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Height</span><input type="range" min="60" max="400" data-prop="height" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Radius</span><input type="range" min="0" max="100" data-prop="radius" /><span class="value"></span></div>
-      </div>
-
-      <div>
-        <div class="section-label">Shadow</div>
-        <div class="slider-row"><span>X Offset</span><input type="range" min="-60" max="60" data-prop="offsetX" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Y Offset</span><input type="range" min="-60" max="60" data-prop="offsetY" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Blur</span><input type="range" min="0" max="80" data-prop="blur" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Opacity</span><input type="range" min="0" max="100" data-prop="opacity" /><span class="value"></span></div>
-      </div>
-
-      <div>
-        <div class="palette-header">
-          <div class="section-label" style="margin:0">Palette</div>
-          <button id="randomize-btn">Randomize</button>
-        </div>
-        <div class="palette-grid" id="palette-grid"></div>
-      </div>
-
-      <div>
-        <div class="custom-colors-header">
-          <div class="section-label" style="margin:0">Custom Colors</div>
-          <span class="custom-active-indicator" id="custom-indicator" hidden>active</span>
-        </div>
-        <div class="color-stops" id="color-stops"></div>
-        <button class="add-stop-btn" id="add-stop-btn">+ Add color stop</button>
-        <button class="add-stop-btn" id="use-preset-btn" style="margin-top:4px" hidden>Back to preset</button>
-      </div>
-
-      <div>
-        <div class="section-label">Shape</div>
-        <div class="segmented" id="shape-seg">
-          <button data-val="line">Linear</button>
-          <button data-val="radial">Radial</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="slider-row"><span>Angle</span><input type="range" min="0" max="360" data-prop="angle" /><span class="value"></span></div>
-      </div>
-
-      <div>
-        <div class="slider-row"><span>Spread</span><input type="range" min="0" max="200" data-prop="spread" /><span class="value"></span></div>
-      </div>
-
-      <div>
-        <div class="section-label">Pixel Scale</div>
-        <div class="segmented" id="pixelscale-seg">
-          <button data-val="1">1px</button>
-          <button data-val="2">2px</button>
-          <button data-val="3">3px</button>
-          <button data-val="4">4px</button>
-          <button data-val="5">5px</button>
-          <button data-val="6">6px</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-label">Dither</div>
-        <div class="segmented" id="dither-seg">
-          <button data-val="off">Off</button>
-          <button data-val="2x2">2x2</button>
-          <button data-val="4x4">4x4</button>
-          <button data-val="8x8">8x8</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="slider-row"><span>Quant Levels</span><input type="range" min="2" max="7" step="1" data-prop="quantLevels" /><span class="value"></span></div>
-      </div>
-
-      <div>
-        <div class="toggle-row">
-          <span>Oklab Interpolation</span>
-          <button class="toggle" id="oklab-toggle"></button>
-        </div>
-      </div>
-
-      <div>
-        <div class="slider-row"><span>Contrast</span><input type="range" min="50" max="200" data-prop="contrast" /><span class="value"></span></div>
-        <div class="slider-row" style="margin-top:4px"><span>Brightness</span><input type="range" min="-50" max="50" data-prop="brightness" /><span class="value"></span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- XY Pad -->
-  <div class="xy-pad-container">
-    <div class="xy-labels">
-      <span>X <strong id="xy-x">0</strong></span>
-      <span>Y <strong id="xy-y">0</strong></span>
-    </div>
-    <div class="xy-pad" id="xy-pad">
-      <div class="xy-dot" id="xy-dot"></div>
-    </div>
-    <div class="xy-extra">
-      <label>Blur <input type="range" min="0" max="80" id="xy-blur" /></label>
-      <label>Opacity <input type="range" min="0" max="100" id="xy-opacity" /></label>
     </div>
   </div>
 
@@ -321,14 +95,73 @@ app.innerHTML = `
 
 const canvas = document.getElementById('shadow') as HTMLCanvasElement
 const card = document.getElementById('card') as HTMLDivElement
+const sidebarMount = document.getElementById('sidebar-mount')!
 
-// ---- Palette ----
-const paletteGrid = document.getElementById('palette-grid')!
+// ---- Build Sidebar ----
+const sb = createSidebar()
+sidebarMount.appendChild(sb)
+
+// All slider/control refs for syncing
+const controls: Record<string, { setValue: (v: number | string | boolean) => void }> = {}
+
+// Dimensions
+const dimSection = createSection()
+const widthSlider = createSlider({ label: 'Width', min: 100, max: 600, value: state.width, suffix: 'px', onChange: v => { state.width = v; update() } })
+const heightSlider = createSlider({ label: 'Height', min: 60, max: 400, value: state.height, suffix: 'px', onChange: v => { state.height = v; update() } })
+const radiusSlider = createSlider({ label: 'Radius', min: 0, max: 100, value: state.radius, suffix: 'px', onChange: v => { state.radius = v; update() } })
+dimSection.append(widthSlider.el, heightSlider.el, radiusSlider.el)
+controls.width = widthSlider; controls.height = heightSlider; controls.radius = radiusSlider
+sb.appendChild(dimSection)
+
+// Shadow
+const shadowSection = createSection()
+const xOffsetSlider = createSlider({ label: 'X Offset', min: -60, max: 60, value: state.offsetX, suffix: 'px', onChange: v => { state.offsetX = v; syncXYPad(); update() } })
+const yOffsetSlider = createSlider({ label: 'Y Offset', min: -60, max: 60, value: state.offsetY, suffix: 'px', onChange: v => { state.offsetY = v; syncXYPad(); update() } })
+const blurSlider = createSlider({ label: 'Blur', min: 0, max: 80, value: state.blur, suffix: 'px', onChange: v => { state.blur = v; syncXYPad(); update() } })
+const opacitySlider = createSlider({ label: 'Opacity', min: 0, max: 100, value: Math.round(state.opacity * 100), suffix: '%', onChange: v => { state.opacity = v / 100; syncXYPad(); update() } })
+shadowSection.append(xOffsetSlider.el, yOffsetSlider.el, blurSlider.el, opacitySlider.el)
+controls.offsetX = xOffsetSlider; controls.offsetY = yOffsetSlider; controls.blur = blurSlider; controls.opacity = opacitySlider
+sb.appendChild(shadowSection)
+
+// XY Pad (Position)
+const xySection = createSection('Position')
+const xyLabels = document.createElement('div')
+xyLabels.className = 'xy-labels'
+xyLabels.innerHTML = '<span>X <strong id="xy-x">0</strong></span><span>Y <strong id="xy-y">0</strong></span>'
+xySection.appendChild(xyLabels)
+
+const xyPadEl = document.createElement('div')
+xyPadEl.className = 'xy-pad'
+xyPadEl.id = 'xy-pad'
+const xyDotEl = document.createElement('div')
+xyDotEl.className = 'xy-dot'
+xyDotEl.id = 'xy-dot'
+xyPadEl.appendChild(xyDotEl)
+xySection.appendChild(xyPadEl)
+sb.appendChild(xySection)
+
+// Palette
+const paletteSection = createSection()
+const paletteHeader = document.createElement('div')
+paletteHeader.className = 'sb-palette-header'
+const paletteLbl = document.createElement('div')
+paletteLbl.className = 'sb-label'
+paletteLbl.textContent = 'Palette'
+const randomizeBtn = document.createElement('button')
+randomizeBtn.className = 'sb-palette-header__action'
+randomizeBtn.textContent = 'Randomize'
+paletteHeader.append(paletteLbl, randomizeBtn)
+paletteSection.appendChild(paletteHeader)
+
+const paletteGrid = document.createElement('div')
+paletteGrid.className = 'sb-palette-grid'
+paletteSection.appendChild(paletteGrid)
+
 function renderPalette() {
   paletteGrid.innerHTML = ''
   for (const p of PRESETS) {
     const swatch = document.createElement('button')
-    swatch.className = `palette-swatch${state.preset === p.id ? ' active' : ''}`
+    swatch.className = `sb-swatch${state.preset === p.id && !state.colors ? ' active' : ''}`
     const mid = p.stops[Math.floor(p.stops.length / 2)]
     const edge = p.stops[p.stops.length - 1]
     swatch.style.background = `radial-gradient(circle, rgb(${mid}), rgb(${edge}))`
@@ -345,28 +178,50 @@ function renderPalette() {
 }
 renderPalette()
 
-document.getElementById('randomize-btn')!.addEventListener('click', () => {
-  const idx = Math.floor(Math.random() * PRESETS.length)
-  state.preset = PRESETS[idx].id
+randomizeBtn.addEventListener('click', () => {
+  state.preset = PRESETS[Math.floor(Math.random() * PRESETS.length)].id
   delete (state as any).colors
+  customStops = []
   renderPalette()
   renderCustomColors()
   update()
 })
 
-// ---- Custom Colors ----
-const colorStopsContainer = document.getElementById('color-stops')!
-const addStopBtn = document.getElementById('add-stop-btn')!
-const usePresetBtn = document.getElementById('use-preset-btn')!
-const customIndicator = document.getElementById('custom-indicator')!
+sb.appendChild(paletteSection)
 
-let customStops: [number, number, number][] = []
+// Custom Colors (inline circles)
+const colorsSection = createSection()
+const colorsHeader = document.createElement('div')
+colorsHeader.className = 'sb-palette-header'
+const colorsLbl = document.createElement('div')
+colorsLbl.className = 'sb-label'
+colorsLbl.textContent = 'Colors'
+const colorsActive = document.createElement('span')
+colorsActive.className = 'sb-active-badge'
+colorsActive.hidden = true
+colorsActive.textContent = 'active'
+colorsHeader.append(colorsLbl, colorsActive)
+colorsSection.appendChild(colorsHeader)
+
+const colorsRow = document.createElement('div')
+colorsRow.className = 'sb-colors-row'
+colorsSection.appendChild(colorsRow)
+
+const backLink = document.createElement('button')
+backLink.className = 'sb-back-link'
+backLink.textContent = 'Back to preset'
+backLink.hidden = true
+backLink.addEventListener('click', () => {
+  delete (state as any).colors
+  customStops = []
+  renderPalette()
+  renderCustomColors()
+  update()
+})
+colorsSection.appendChild(backLink)
 
 function hexToRgb(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return [r, g, b]
+  return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
 }
 
 function rgbToHex(rgb: [number, number, number]): string {
@@ -376,157 +231,116 @@ function rgbToHex(rgb: [number, number, number]): string {
 function applyCustomColors() {
   if (customStops.length >= 2) {
     state.colors = [...customStops]
-    customIndicator.hidden = false
-    usePresetBtn.hidden = false
-    // Deselect palette
-    paletteGrid.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('active'))
+    paletteGrid.querySelectorAll('.sb-swatch').forEach(s => s.classList.remove('active'))
     update()
   }
 }
 
 function renderCustomColors() {
-  colorStopsContainer.innerHTML = ''
-  const isCustomActive = !!state.colors
+  colorsRow.innerHTML = ''
+  const isCustom = !!state.colors
+  colorsActive.hidden = !isCustom
+  backLink.hidden = !isCustom
 
-  customIndicator.hidden = !isCustomActive
-  usePresetBtn.hidden = !isCustomActive
-
-  customStops.forEach((stop, i) => {
-    const row = document.createElement('div')
-    row.className = 'color-stop'
-
-    const picker = document.createElement('input')
-    picker.type = 'color'
-    picker.value = rgbToHex(stop)
-    picker.addEventListener('input', () => {
-      customStops[i] = hexToRgb(picker.value)
-      hex.textContent = picker.value
+  for (let i = 0; i < customStops.length; i++) {
+    const stop = customStops[i]
+    const colorInput = document.createElement('input')
+    colorInput.type = 'color'
+    colorInput.className = 'sb-color-circle'
+    colorInput.value = rgbToHex(stop)
+    colorInput.addEventListener('input', () => {
+      customStops[i] = hexToRgb(colorInput.value)
       applyCustomColors()
     })
-
-    const hex = document.createElement('span')
-    hex.className = 'hex'
-    hex.textContent = rgbToHex(stop)
-
-    const removeBtn = document.createElement('button')
-    removeBtn.className = 'remove-stop'
-    removeBtn.textContent = '\u00D7'
-    removeBtn.addEventListener('click', () => {
-      customStops.splice(i, 1)
-      if (customStops.length < 2) {
-        delete (state as any).colors
-        update()
-      } else {
-        applyCustomColors()
-      }
-      renderCustomColors()
-    })
-
-    row.appendChild(picker)
-    row.appendChild(hex)
-    row.appendChild(removeBtn)
-    colorStopsContainer.appendChild(row)
-  })
-}
-
-addStopBtn.addEventListener('click', () => {
-  // If first time, seed with two colors
-  if (customStops.length === 0) {
-    customStops.push([0, 0, 0], [255, 255, 255])
-  } else {
-    // Add a random color
-    const r = Math.floor(Math.random() * 256)
-    const g = Math.floor(Math.random() * 256)
-    const b = Math.floor(Math.random() * 256)
-    customStops.push([r, g, b])
+    colorsRow.appendChild(colorInput)
   }
-  applyCustomColors()
-  renderCustomColors()
-})
 
-usePresetBtn.addEventListener('click', () => {
-  delete (state as any).colors
-  customStops = []
-  renderPalette()
-  renderCustomColors()
-  update()
-})
-
+  const addBtn = document.createElement('button')
+  addBtn.className = 'sb-color-add'
+  addBtn.textContent = '+'
+  addBtn.addEventListener('click', () => {
+    if (customStops.length === 0) {
+      customStops.push([0, 0, 0], [255, 255, 255])
+    } else {
+      customStops.push([Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)])
+    }
+    applyCustomColors()
+    renderCustomColors()
+  })
+  colorsRow.appendChild(addBtn)
+}
 renderCustomColors()
 
-// ---- Sliders ----
-function syncSliders() {
-  document.querySelectorAll<HTMLInputElement>('[data-prop]').forEach((input) => {
-    const prop = input.dataset.prop as keyof typeof state
-    let val = (state as any)[prop]
-    if (prop === 'opacity') val = Math.round(val * 100)
-    input.value = String(val)
-    const valueEl = input.parentElement?.querySelector('.value')
-    if (valueEl) {
-      let display = String(val)
-      if (prop === 'angle') display += '\u00B0'
-      else if (prop === 'opacity') display += '%'
-      else if (['width', 'height', 'radius', 'offsetX', 'offsetY', 'blur', 'spread'].includes(prop)) display += 'px'
-      valueEl.textContent = display
-    }
-  })
-}
+sb.appendChild(colorsSection)
 
-document.querySelectorAll<HTMLInputElement>('[data-prop]').forEach((input) => {
-  input.addEventListener('input', () => {
-    const prop = input.dataset.prop as string
-    let val = Number(input.value)
-    if (prop === 'opacity') val = val / 100
-    ;(state as any)[prop] = val
-    syncSliders()
-    syncXYPad()
-    update()
-  })
+// Shape
+const shapeSection = createSection('Shape')
+const shapeSeg = createSegmented({
+  options: [{ label: 'Linear', value: 'line' }, { label: 'Radial', value: 'radial' }],
+  value: state.shape,
+  onChange: v => { state.shape = v as any; update() },
 })
+shapeSection.appendChild(shapeSeg.el)
+controls.shape = shapeSeg
+sb.appendChild(shapeSection)
 
-// ---- Segmented controls ----
-function initSegmented(id: string, prop: string) {
-  const container = document.getElementById(id)!
-  function activate() {
-    container.querySelectorAll('button').forEach((btn) => {
-      const val = btn.dataset.val!
-      btn.classList.toggle('active', String((state as any)[prop]) === val)
-    })
-  }
-  container.querySelectorAll('button').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const val = btn.dataset.val!
-      ;(state as any)[prop] = prop === 'pixelScale' ? Number(val) : val
-      activate()
-      update()
-    })
-  })
-  activate()
-}
-initSegmented('shape-seg', 'shape')
-initSegmented('pixelscale-seg', 'pixelScale')
-initSegmented('dither-seg', 'dither')
+// Angle & Spread
+const geoSection = createSection()
+const angleSlider = createSlider({ label: 'Angle', min: 0, max: 360, value: state.angle, suffix: '\u00B0', onChange: v => { state.angle = v; update() } })
+const spreadSlider = createSlider({ label: 'Spread', min: 0, max: 200, value: state.spread, onChange: v => { state.spread = v; update() } })
+geoSection.append(angleSlider.el, spreadSlider.el)
+controls.angle = angleSlider; controls.spread = spreadSlider
+sb.appendChild(geoSection)
 
-// ---- Oklab toggle ----
-const oklabToggle = document.getElementById('oklab-toggle')!
-function syncOklab() {
-  oklabToggle.classList.toggle('on', state.oklab)
-}
-oklabToggle.addEventListener('click', () => {
-  state.oklab = !state.oklab
-  syncOklab()
-  update()
+// Pixel Scale
+const pxSection = createSection('Pixel Scale')
+const pxSeg = createSegmented({
+  options: [{ label: '1px', value: '1' }, { label: '2px', value: '2' }, { label: '3px', value: '3' }, { label: '4px', value: '4' }, { label: '5px', value: '5' }, { label: '6px', value: '6' }],
+  value: String(state.pixelScale),
+  onChange: v => { state.pixelScale = Number(v); update() },
 })
-syncOklab()
+pxSection.appendChild(pxSeg.el)
+controls.pixelScale = pxSeg
+sb.appendChild(pxSection)
+
+// Dither
+const ditherSection = createSection('Dither')
+const ditherSeg = createSegmented({
+  options: [{ label: 'Off', value: 'off' }, { label: '2\u00D72', value: '2x2' }, { label: '4\u00D74', value: '4x4' }, { label: '8\u00D78', value: '8x8' }],
+  value: state.dither,
+  onChange: v => { state.dither = v as any; update() },
+})
+ditherSection.appendChild(ditherSeg.el)
+controls.dither = ditherSeg
+sb.appendChild(ditherSection)
+
+// Quant Levels
+const quantSection = createSection()
+const quantSlider = createSlider({ label: 'Quant Levels', min: 2, max: 7, step: 1, value: state.quantLevels, onChange: v => { state.quantLevels = v; update() } })
+quantSection.appendChild(quantSlider.el)
+controls.quantLevels = quantSlider
+sb.appendChild(quantSection)
+
+// Oklab
+const oklabSection = createSection()
+const oklabToggle = createToggle({ label: 'Oklab Interpolation', value: state.oklab, onChange: v => { state.oklab = v; update() } })
+oklabSection.appendChild(oklabToggle.el)
+controls.oklab = oklabToggle
+sb.appendChild(oklabSection)
+
+// Contrast & Brightness
+const cbSection = createSection()
+const contrastSlider = createSlider({ label: 'Contrast', min: 50, max: 200, value: state.contrast, onChange: v => { state.contrast = v; update() } })
+const brightnessSlider = createSlider({ label: 'Brightness', min: -50, max: 50, value: state.brightness, onChange: v => { state.brightness = v; update() } })
+cbSection.append(contrastSlider.el, brightnessSlider.el)
+controls.contrast = contrastSlider; controls.brightness = brightnessSlider
+sb.appendChild(cbSection)
 
 // ---- XY Pad ----
 const xyPad = document.getElementById('xy-pad')!
 const xyDot = document.getElementById('xy-dot')!
 const xyXLabel = document.getElementById('xy-x')!
 const xyYLabel = document.getElementById('xy-y')!
-const xyBlur = document.getElementById('xy-blur') as HTMLInputElement
-const xyOpacity = document.getElementById('xy-opacity') as HTMLInputElement
-
 function syncXYPad() {
   const x = ((state.offsetX + 60) / 120) * 100
   const y = ((state.offsetY + 60) / 120) * 100
@@ -534,8 +348,6 @@ function syncXYPad() {
   xyDot.style.top = `${y}%`
   xyXLabel.textContent = String(state.offsetX)
   xyYLabel.textContent = String(state.offsetY)
-  xyBlur.value = String(state.blur)
-  xyOpacity.value = String(Math.round(state.opacity * 100))
 }
 
 function handleXYMove(e: PointerEvent) {
@@ -544,31 +356,18 @@ function handleXYMove(e: PointerEvent) {
   const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height))
   state.offsetX = Math.round(x * 120 - 60)
   state.offsetY = Math.round(y * 120 - 60)
+  xOffsetSlider.setValue(state.offsetX)
+  yOffsetSlider.setValue(state.offsetY)
   syncXYPad()
-  syncSliders()
   update()
 }
 
 xyPad.addEventListener('pointerdown', (e) => {
   handleXYMove(e)
   const onMove = (ev: PointerEvent) => handleXYMove(ev)
-  const onUp = () => {
-    window.removeEventListener('pointermove', onMove)
-    window.removeEventListener('pointerup', onUp)
-  }
+  const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp) }
   window.addEventListener('pointermove', onMove)
   window.addEventListener('pointerup', onUp)
-})
-
-xyBlur.addEventListener('input', () => {
-  state.blur = Number(xyBlur.value)
-  syncSliders()
-  update()
-})
-xyOpacity.addEventListener('input', () => {
-  state.opacity = Number(xyOpacity.value) / 100
-  syncSliders()
-  update()
 })
 
 // ---- Shuffle ----
@@ -592,14 +391,26 @@ document.getElementById('shuffle-btn')!.addEventListener('click', () => {
   delete (state as any).colors
   customStops = []
 
+  widthSlider.setValue(state.width)
+  heightSlider.setValue(state.height)
+  radiusSlider.setValue(state.radius)
+  xOffsetSlider.setValue(state.offsetX)
+  yOffsetSlider.setValue(state.offsetY)
+  blurSlider.setValue(state.blur)
+  opacitySlider.setValue(Math.round(state.opacity * 100))
+  angleSlider.setValue(state.angle)
+  spreadSlider.setValue(state.spread)
+  quantSlider.setValue(state.quantLevels)
+  contrastSlider.setValue(state.contrast)
+  brightnessSlider.setValue(state.brightness)
+  shapeSeg.setValue(state.shape)
+  pxSeg.setValue(String(state.pixelScale))
+  ditherSeg.setValue(state.dither)
+  oklabToggle.setValue(state.oklab)
+
   renderPalette()
   renderCustomColors()
-  syncSliders()
   syncXYPad()
-  syncOklab()
-  initSegmented('shape-seg', 'shape')
-  initSegmented('pixelscale-seg', 'pixelScale')
-  initSegmented('dither-seg', 'dither')
   update()
 })
 
@@ -613,12 +424,9 @@ function update() {
 
   renderShadow(canvas, width, height, radius, config)
 
-  // Size canvas CSS to match the library's React component behavior
   const pad = config.blur * 2 + Math.max(Math.abs(config.offsetX), Math.abs(config.offsetY)) + 20
   const canvasW = width + pad * 2
   const canvasH = height + pad * 2
-  // Use exact integer multiples of pixelScale for CSS size to avoid
-  // sub-pixel scaling artifacts that cause visible color banding
   const ps = config.pixelScale
   const cssW = Math.ceil(canvasW / ps) * ps
   const cssH = Math.ceil(canvasH / ps) * ps
@@ -629,6 +437,5 @@ function update() {
   canvas.style.opacity = String(config.opacity)
 }
 
-syncSliders()
 syncXYPad()
 update()
