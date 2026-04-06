@@ -3,13 +3,31 @@ import { createServer as createViteServer } from 'vite'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { scanRooms } from '../shared/scanner'
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, execSync, ChildProcess } from 'child_process'
 import { createServer as createNetServer } from 'net'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const ROOMS_DIR = resolve(__dirname, '..', 'rooms')
 
 const runningRooms = new Map<string, { port: number; process: ChildProcess }>()
+
+function killProcessTree(pid: number) {
+  try {
+    // Kill the entire process group (works on macOS/Linux)
+    process.kill(-pid, 'SIGKILL')
+  } catch {
+    try {
+      // Fallback: find and kill all child processes
+      const children = execSync(`pgrep -P ${pid}`, { encoding: 'utf-8' }).trim().split('\n')
+      for (const childPid of children) {
+        if (childPid) {
+          try { process.kill(Number(childPid), 'SIGKILL') } catch {}
+        }
+      }
+    } catch {}
+    try { process.kill(pid, 'SIGKILL') } catch {}
+  }
+}
 
 async function findFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -40,6 +58,7 @@ async function startRoomServer(
     cwd: roomPath,
     stdio: 'pipe',
     env: { ...process.env },
+    detached: true,
   })
 
   runningRooms.set(roomName, { port, process: child })
@@ -97,7 +116,7 @@ async function main() {
       return
     }
 
-    entry.process.kill()
+    killProcessTree(entry.process.pid!)
     runningRooms.delete(req.params.name)
     res.json({ stopped: true })
   })
@@ -117,7 +136,7 @@ async function main() {
   // Cleanup on exit
   process.on('SIGINT', () => {
     for (const [, entry] of runningRooms) {
-      entry.process.kill()
+      killProcessTree(entry.process.pid!)
     }
     process.exit()
   })
