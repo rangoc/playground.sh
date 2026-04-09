@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "pnpm --filter dashboard dev",
     "dashboard": "pnpm --filter dashboard dev",
     "build:all": "pnpm --filter './rooms/*' --parallel build",
     "test": "vitest run"

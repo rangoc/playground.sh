@@ -84,12 +84,11 @@ export default mergeConfig(baseConfig, defineConfig({}))
 ```json
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "baseUrl": "."
-  },
   "include": ["**/*.ts"]
 }
 ```
+
+**Do NOT set `baseUrl`** in room tsconfigs — it overrides path resolution and breaks the inherited `@shared/*` mapping from the root.
 
 For React, add `"jsx": "react-jsx"` and include `"**/*.tsx"`.
 For Svelte, include `"**/*.svelte"`.

@@ -101,16 +101,12 @@ const sidebarMount = document.getElementById('sidebar-mount')!
 const sb = createSidebar()
 sidebarMount.appendChild(sb)
 
-// All slider/control refs for syncing
-const controls: Record<string, { setValue: (v: number | string | boolean) => void }> = {}
-
 // Dimensions
 const dimSection = createSection()
 const widthSlider = createSlider({ label: 'Width', min: 100, max: 600, value: state.width, suffix: 'px', onChange: v => { state.width = v; update() } })
 const heightSlider = createSlider({ label: 'Height', min: 60, max: 400, value: state.height, suffix: 'px', onChange: v => { state.height = v; update() } })
 const radiusSlider = createSlider({ label: 'Radius', min: 0, max: 100, value: state.radius, suffix: 'px', onChange: v => { state.radius = v; update() } })
 dimSection.append(widthSlider.el, heightSlider.el, radiusSlider.el)
-controls.width = widthSlider; controls.height = heightSlider; controls.radius = radiusSlider
 sb.appendChild(dimSection)
 
 // Shadow
@@ -120,7 +116,6 @@ const yOffsetSlider = createSlider({ label: 'Y Offset', min: -60, max: 60, value
 const blurSlider = createSlider({ label: 'Blur', min: 0, max: 80, value: state.blur, suffix: 'px', onChange: v => { state.blur = v; syncXYPad(); update() } })
 const opacitySlider = createSlider({ label: 'Opacity', min: 0, max: 100, value: Math.round(state.opacity * 100), suffix: '%', onChange: v => { state.opacity = v / 100; syncXYPad(); update() } })
 shadowSection.append(xOffsetSlider.el, yOffsetSlider.el, blurSlider.el, opacitySlider.el)
-controls.offsetX = xOffsetSlider; controls.offsetY = yOffsetSlider; controls.blur = blurSlider; controls.opacity = opacitySlider
 sb.appendChild(shadowSection)
 
 // XY Pad (Position)
@@ -281,7 +276,6 @@ const shapeSeg = createSegmented({
   onChange: v => { state.shape = v as any; update() },
 })
 shapeSection.appendChild(shapeSeg.el)
-controls.shape = shapeSeg
 sb.appendChild(shapeSection)
 
 // Angle & Spread
@@ -289,7 +283,6 @@ const geoSection = createSection()
 const angleSlider = createSlider({ label: 'Angle', min: 0, max: 360, value: state.angle, suffix: '\u00B0', onChange: v => { state.angle = v; update() } })
 const spreadSlider = createSlider({ label: 'Spread', min: 0, max: 200, value: state.spread, onChange: v => { state.spread = v; update() } })
 geoSection.append(angleSlider.el, spreadSlider.el)
-controls.angle = angleSlider; controls.spread = spreadSlider
 sb.appendChild(geoSection)
 
 // Pixel Scale
@@ -300,7 +293,6 @@ const pxSeg = createSegmented({
   onChange: v => { state.pixelScale = Number(v); update() },
 })
 pxSection.appendChild(pxSeg.el)
-controls.pixelScale = pxSeg
 sb.appendChild(pxSection)
 
 // Dither
@@ -311,21 +303,18 @@ const ditherSeg = createSegmented({
   onChange: v => { state.dither = v as any; update() },
 })
 ditherSection.appendChild(ditherSeg.el)
-controls.dither = ditherSeg
 sb.appendChild(ditherSection)
 
 // Quant Levels
 const quantSection = createSection()
 const quantSlider = createSlider({ label: 'Quant Levels', min: 2, max: 7, step: 1, value: state.quantLevels, onChange: v => { state.quantLevels = v; update() } })
 quantSection.appendChild(quantSlider.el)
-controls.quantLevels = quantSlider
 sb.appendChild(quantSection)
 
 // Oklab
 const oklabSection = createSection()
 const oklabToggle = createToggle({ label: 'Oklab Interpolation', value: state.oklab, onChange: v => { state.oklab = v; update() } })
 oklabSection.appendChild(oklabToggle.el)
-controls.oklab = oklabToggle
 sb.appendChild(oklabSection)
 
 // Contrast & Brightness
@@ -333,7 +322,6 @@ const cbSection = createSection()
 const contrastSlider = createSlider({ label: 'Contrast', min: 50, max: 200, value: state.contrast, onChange: v => { state.contrast = v; update() } })
 const brightnessSlider = createSlider({ label: 'Brightness', min: -50, max: 50, value: state.brightness, onChange: v => { state.brightness = v; update() } })
 cbSection.append(contrastSlider.el, brightnessSlider.el)
-controls.contrast = contrastSlider; controls.brightness = brightnessSlider
 sb.appendChild(cbSection)
 
 // ---- XY Pad ----
